@@ -1,9 +1,8 @@
 "use client";
-import Form from '@components/Form'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
 
-
+import Form from '@components/Form';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
 
 const EditPrompt = () => {
     const router = useRouter();
@@ -24,43 +23,49 @@ const EditPrompt = () => {
             setPost({
                 prompt: data.prompt,
                 tag: data.tag
-            })
-        }
-        if (promptId) getPromptDetails()
+            });
+        };
+        if (promptId) getPromptDetails();
     }, [promptId]);
 
     const updatePrompt = async (e) => {
         e.preventDefault();
         setSubmitting(true);
 
-        if(!promptId) return alert('Prompt ID not found.')
+        if (!promptId) return alert('Prompt ID not found.');
 
         try {
             const res = await fetch(`/api/prompt/${promptId}`, {
                 method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({
                     prompt: post.prompt,
                     tag: post.tag
                 })
-            })
-            if (res.ok){
-                router.push('/')
+            });
+            if (res.ok) {
+                router.push('/');
             }
         } catch (error) {
             console.log(error);
         } finally {
-            setSubmitting(false)
+            setSubmitting(false);
         }
-    }
-    return (
-        <Form
-            type='Create' 
-            post={post} 
-            setPost={setPost} 
-            submitting={submitting} 
-            handleSubmit={updatePrompt}
-        />
-    )
-}
+    };
 
-export default EditPrompt
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <Form
+                type='Edit' 
+                post={post} 
+                setPost={setPost} 
+                submitting={submitting} 
+                handleSubmit={updatePrompt}
+            />
+        </Suspense>
+    );
+};
+
+export default EditPrompt;
